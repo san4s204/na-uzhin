@@ -318,3 +318,29 @@ footer > a:last-child { justify-self: end; color: var(--ink); text-underline-off
   .add-dish-button { width: 100%; justify-content: center; }
   .dish-kicker p { font-size: 9px; }
 }
+
+/* Private shared-room access */
+.access-gate { position: fixed; z-index: 100; inset: 0; min-height: 100dvh; display: grid; place-items: center; overflow-y: auto; padding: 24px; background: rgba(45,23,42,.82); backdrop-filter: blur(18px) saturate(.75); }
+.access-card { position: relative; width: min(620px, 100%); overflow: hidden; background: var(--cream); color: var(--ink); border-radius: 4px 120px 4px 4px; padding: clamp(34px,7vw,72px); box-shadow: 0 40px 110px rgba(0,0,0,.38); animation: picker-in .45s cubic-bezier(.2,.8,.2,1) both; }
+.access-card::after { content: ''; position: absolute; right: -90px; top: -95px; width: 250px; height: 250px; border: 44px solid rgba(238,88,55,.15); border-radius: 50%; pointer-events: none; }
+.access-mark { position: absolute; z-index: 1; right: 42px; top: 38px; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; background: var(--tomato); color: white; font-size: 13px; font-weight: 800; }
+.access-card h1 { margin: 0; font: 400 clamp(52px,9vw,82px)/.84 Georgia,serif; letter-spacing: -.06em; }
+.access-card h1 em { color: var(--tomato); font-weight: 400; }
+.access-intro { max-width: 470px; margin: 30px 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+.access-checking { margin: 34px 0 0; color: var(--muted); font-size: 14px; }
+.access-card form { display: grid; gap: 8px; }
+.access-card form label { color: var(--muted); text-transform: uppercase; letter-spacing: .13em; font-size: 9px; font-weight: 800; }
+.access-card form > div { display: grid; grid-template-columns: 1fr auto; overflow: hidden; border: 1px solid var(--line); border-radius: 999px; background: white; padding: 5px; }
+.access-card input { min-width: 0; border: 0; outline: none; background: transparent; color: var(--ink); padding: 11px 17px; font: 600 16px var(--font-geist-sans),Arial,sans-serif; letter-spacing: .05em; }
+.access-card form button { border: 0; border-radius: 999px; background: var(--ink); color: white; padding: 11px 20px; font-weight: 750; cursor: pointer; }
+.access-card form button span { margin-left: 8px; color: var(--tomato); }
+.access-card > small { display: block; margin-top: 16px; color: #988392; font-size: 10px; }
+.access-error { margin: 7px 12px 0; color: #aa3f36; font-size: 12px; }
+
+@media (max-width: 560px) {
+  .access-gate { padding: 12px; }
+  .access-card { min-height: calc(100dvh - 24px); display: flex; flex-direction: column; justify-content: center; border-radius: 3px 70px 3px 3px; padding: 34px 24px; }
+  .access-mark { right: 24px; top: 24px; width: 42px; height: 42px; }
+  .access-card form > div { grid-template-columns: 1fr; border-radius: 18px; }
+  .access-card form button { min-height: 48px; }
+}

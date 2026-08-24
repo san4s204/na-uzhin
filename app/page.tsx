@@ -21,13 +21,16 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState('');
+  const [access, setAccess] = useState<'checking' | 'locked' | 'granted'>('checking');
+  const [accessCode, setAccessCode] = useState('');
+  const [accessError, setAccessError] = useState('');
   const cycleRef = useRef<number | null>(null);
   const stopRef = useRef<number | null>(null);
 
   useEffect(() => {
     const savedIdentity = localStorage.getItem('dinner-identity');
     if (savedIdentity === 'Я' || savedIdentity === 'Она') setIdentity(savedIdentity);
-    void loadDishes();
+    void checkAccess();
   }, []);
 
   useEffect(() => () => {
@@ -35,6 +38,44 @@ export default function Home() {
     if (stopRef.current) window.clearTimeout(stopRef.current);
   }, []);
 
+  async function checkAccess() {
+    try {
+      const response = await fetch('/api/access', { cache: 'no-store' });
+      const data = await response.json() as { authenticated: boolean };
+      if (data.authenticated) {
+        setAccess('granted');
+        await loadDishes();
+      } else {
+        setAccess('locked');
+        setLoading(false);
+      }
+    } catch {
+      setAccess('locked');
+      setLoading(false);
+    }
+  }
+
+  async function unlockRoom(event: FormEvent) {
+    event.preventDefault();
+    setAccessError('');
+    try {
+      const response = await fetch('/api/access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: accessCode }),
+      });
+      if (!response.ok) {
+        setAccessError('Код не подошёл. Проверьте раскладку и попробуйте ещё раз.');
+        return;
+      }
+      setAccess('granted');
+      setAccessCode('');
+      setLoading(true);
+      await loadDishes();
+    } catch {
+      setAccessError('Не получилось подключиться. Попробуйте ещё раз.');
+    }
+  }
   async function loadDishes() {
     try {
       const response = await fetch('/api/dishes', { cache: 'no-store' });
@@ -162,7 +203,22 @@ export default function Home() {
 
   return (
     <main>
-      <header className="site-header">
+      {access !== 'granted' && <section className="access-gate" aria-labelledby="access-title">
+        <div className="access-card">
+          <span className="access-mark" aria-hidden="true">ну</span>
+          <p className="eyebrow"><span /> Только для вас двоих</p>
+          <h1 id="access-title">Ваш общий<br /><em>столик</em></h1>
+          {access === 'checking' ? <p className="access-checking">Проверяю это устройство…</p> : <>
+            <p className="access-intro">Введите ваш общий код один раз. Браузер запомнит его, а блюда и голоса останутся только между вами.</p>
+            <form onSubmit={unlockRoom}>
+              <label htmlFor="room-code">Общий код</label>
+              <div><input id="room-code" type="password" required autoFocus autoComplete="current-password" value={accessCode} onChange={(event) => setAccessCode(event.target.value)} placeholder="••••••••••••" /><button type="submit">Войти <span>→</span></button></div>
+              {accessError && <p className="access-error" role="alert">{accessError}</p>}
+            </form>
+            <small>Код можно безопасно отправить девушке в личном сообщении.</small>
+          </>}
+        </div>
+      </section>}      <header className="site-header">
         <a className="brand" href="#top" aria-label="На ужин — на главную">
           <span className="brand-mark">ну</span><span>на ужин</span>
         </a>
@@ -267,3 +323,4 @@ export default function Home() {
 function VotePair({ voters, compact = false }: { voters: string[]; compact?: boolean }) {
   return <div className={`vote-pair ${compact ? 'compact' : ''}`} aria-label={`Голоса: ${voters.length ? voters.join(' и ') : 'пока нет'}`}><span className={voters.includes('Я') ? 'active' : ''}>Я</span><span className={voters.includes('Она') ? 'active' : ''}>О</span>{!compact && <small>{voters.length === 2 ? 'вы оба за' : voters.length === 1 ? 'один голос' : 'ждёт голосов'}</small>}</div>;
 }
+

@@ -1,4 +1,5 @@
 import { ensureDatabase } from '@/db/client';
+import { hasRoomAccess } from '@/lib/access';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,8 @@ function mapDish(row: Record<string, unknown>) {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  if (!(await hasRoomAccess(request))) return Response.json({ error: 'Требуется код доступа' }, { status: 401 });
   const db = await ensureDatabase();
   const result = await db.prepare(`
     SELECT d.*,
@@ -39,6 +41,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!(await hasRoomAccess(request))) return Response.json({ error: 'Требуется код доступа' }, { status: 401 });
   const body = await request.json() as Record<string, unknown>;
   const name = String(body.name || '').trim().slice(0, 80);
   const minutes = Math.max(5, Math.min(240, Number(body.minutes) || 30));
@@ -77,6 +80,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  if (!(await hasRoomAccess(request))) return Response.json({ error: 'Требуется код доступа' }, { status: 401 });
   const body = await request.json() as Record<string, unknown>;
   const id = String(body.id || '');
   const name = String(body.name || '').trim().slice(0, 80);
@@ -100,9 +104,12 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  if (!(await hasRoomAccess(request))) return Response.json({ error: 'Требуется код доступа' }, { status: 401 });
   const id = new URL(request.url).searchParams.get('id');
   if (!id) return Response.json({ error: 'Не указано блюдо' }, { status: 400 });
   const db = await ensureDatabase();
   const result = await db.prepare('DELETE FROM dishes WHERE id = ? AND is_custom = 1').bind(id).run();
   return Response.json({ ok: Boolean(result.meta.changes) });
 }
+
+

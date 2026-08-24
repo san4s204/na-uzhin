@@ -1,8 +1,10 @@
 import { ensureDatabase } from '@/db/client';
+import { hasRoomAccess } from '@/lib/access';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+  if (!(await hasRoomAccess(request))) return Response.json({ error: 'Требуется код доступа' }, { status: 401 });
   const body = await request.json() as Record<string, unknown>;
   const dishId = String(body.dishId || '');
   const voter = String(body.voter || '');
@@ -20,3 +22,5 @@ export async function POST(request: Request) {
   await db.prepare('INSERT OR IGNORE INTO votes (dish_id, voter, created_at) VALUES (?, ?, ?)').bind(dishId, voter, new Date().toISOString()).run();
   return Response.json({ active: true });
 }
+
+
