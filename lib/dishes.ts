@@ -13,6 +13,7 @@ export type DishRecord = {
   createdAt: string;
   votes: number;
   voters: string[];
+  voterIds: string[];
 };
 
 export const seedDishes: Omit<DishRecord, 'votes' | 'voters'>[] = [

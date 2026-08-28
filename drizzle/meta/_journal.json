@@ -8,6 +8,13 @@
       "when": 1787566146523,
       "tag": "0000_amazing_metal_master",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1787917887585,
+      "tag": "0001_busy_hex",
+      "breakpoints": true
     }
   ]
 }
